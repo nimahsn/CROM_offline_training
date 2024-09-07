@@ -30,7 +30,9 @@ def prepare_Trainer(args):
     logdir = output_path + '/logs'
     logger = pl_loggers.TensorBoardLogger(save_dir=logdir, name='', version=time_string, log_graph=False)
 
-    trainer = Trainer.from_argparse_args(args, gpus=findEmptyCudaDeviceList(args.gpus), default_root_dir=output_path, callbacks=callbacks, logger=logger, max_epochs= np.sum(args.epo), log_every_n_steps=1, strategy=DDPStrategy(find_unused_parameters=False))
+    trainer = Trainer.from_argparse_args(args, gpus=findEmptyCudaDeviceList(args.gpus), default_root_dir=output_path, 
+                                         callbacks=callbacks, logger=logger, max_epochs= int(np.sum(args.epo)), log_every_n_steps=1, 
+                                         strategy=DDPStrategy(find_unused_parameters=False))
 
     return trainer
 
@@ -157,6 +159,7 @@ def main():
         if args.schedule != 'explicit':
             net, dm = tune_MinMaxLR(net,dm)
             net.epoch_cycle = (trainer.max_epochs//2) // 2 # Divide by Number of cycles you want to do
+            print(net.epoch_cycle)
 
         trainer.fit(net, dm)
     
